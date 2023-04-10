@@ -29,28 +29,26 @@
 # --------------------------------------------------------------------------------
 
 import os
-import pandas as pd
-from collections import defaultdict
-from sklearn.cluster import KMeans
-from sklearn.decomposition import LatentDirichletAllocation as LDA
-from sklearn.decomposition import PCA
-import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
 import re
-import random
-from collections import Counter
-from nltk.stem import WordNetLemmatizer
 import nltk
+import random
+import numpy as np
+import pandas as pd
+import seaborn as sns
 nltk.download('wordnet')
-from sklearn.feature_extraction.text import TfidfVectorizer
+from collections import Counter
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from collections import defaultdict
+from sklearn.decomposition import PCA
+from nltk.stem import WordNetLemmatizer
+from sklearn.metrics import roc_curve, auc
 from sklearn.metrics.pairwise import cosine_similarity
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import LatentDirichletAllocation as LDA
 
 def difference_in_length(answer1, answer2):
     return abs(len(answer1) - len(answer2))
-
 
 def fraction_of_words_with_matching_base_forms(answer1, answer2):
     lemmatizer = WordNetLemmatizer()
@@ -61,7 +59,6 @@ def fraction_of_words_with_matching_base_forms(answer1, answer2):
     average_length = (len(words1) + len(words2)) / 2
     return matching_words / average_length
 
-
 def max_idf_of_matching_base_form(answer1, answer2):
     tfidf = TfidfVectorizer()
     matrix = tfidf.fit_transform([answer1, answer2])
@@ -69,18 +66,15 @@ def max_idf_of_matching_base_form(answer1, answer2):
     max_idf = max(tfidf.idf_)
     return max_idf
 
-
 def tf_idf_vector_similarity(answer1, answer2):
     tfidf = TfidfVectorizer()
     matrix = tfidf.fit_transform([answer1, answer2])
     return cosine_similarity(matrix[0:1], matrix[1:])[0][0]
 
-
 def tf_idf_vector_similarity_of_letters(answer1, answer2):
     tfidf = TfidfVectorizer(analyzer='char', token_pattern=r'\w{1,}')
     matrix = tfidf.fit_transform([answer1, answer2])
     return cosine_similarity(matrix[0:1], matrix[1:])[0][0]
-
 
 def lowercase_string_match(answer1, answer2):
     return answer1.lower() == answer2.lower()
@@ -89,19 +83,39 @@ def read_excel(file_path):
     return pd.read_excel(file_path, engine='openpyxl', header=0)
 
 def preprocess_answer_key(df):
-    # Add preprocessing steps specific to the answer key DataFrame
+    # Preprocessing steps specific to the answer key DataFrame
+    df = preprocess_data(df)
     return preprocess_data(df)
 
 def preprocess_student_answers_grades(df):
-    # Add preprocessing steps specific to the student answers and grades DataFrame
+    # Preprocessing steps specific to the student answers and grades DataFrame
+    df = preprocess_data(df)
+
+    # Create a new column 'answer_processed' with preprocessed answers
+    df['answer_processed'] = df['answer'].apply(lambda x: x.lower() if isinstance(x, str) else x)  # Lowercase
+    df['answer_processed'] = df['answer_processed'].apply(lambda x: re.sub(r'[^\w\s]', '', x) if isinstance(x, str) else x)  # Remove special characters
+    df['answer_processed'] = df['answer_processed'].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
+
     return preprocess_data(df)
 
 def preprocess_answer_groupings(df):
-    # Add preprocessing steps specific to the answer groupings DataFrame
+    # Preprocessing steps specific to the answer groupings DataFrame
+    df = preprocess_data(df)
+
+    # Preprocessing for the 'grouplabel' column
+    df['grouplabel'] = df['grouplabel'].apply(lambda x: x.lower() if isinstance(x, str) else x)  # Lowercase
+    df['grouplabel'] = df['grouplabel'].apply(lambda x: re.sub(r'[^\w\s]', '', x) if isinstance(x, str) else x)  # Remove special characters
+    df['grouplabel'] = df['grouplabel'].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
+
     return preprocess_data(df)
 
 def preprocess_data(df):
     # Preprocessing steps such as lowercasing, removing special characters, etc. can be added here
+    for column in df.columns:
+        if df[column].dtype == 'object':  # Apply preprocessing only on string columns
+            df[column] = df[column].apply(lambda x: x.lower() if isinstance(x, str) else x)  # Lowercase
+            df[column] = df[column].apply(lambda x: re.sub(r'[^\w\s]', '', x) if isinstance(x, str) else x)  # Remove special characters
+            df[column] = df[column].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
     return df
 
 def get_answer_groupings(df):
