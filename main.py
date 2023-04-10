@@ -46,6 +46,15 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation as LDA
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import TruncatedSVD
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
 
 def difference_in_length(answer1, answer2):
     return abs(len(answer1) - len(answer2))
@@ -164,6 +173,7 @@ def compare_student_answers(question_numbers, student_answers, answer_key_df, an
         raise ValueError("The lengths of question_numbers and student_answers must match.")
 
     # Display the header for the table-like output
+    print(f'')
     print(f"{'Q#':<5}{'Student Answer':<40}{'Cosine Similarity':<40}{'Correctness'}")
     print("-" * 90)
 
@@ -364,6 +374,25 @@ def plot_lda_clusters(lda_matrix, cluster_labels, answer_groupings, title):
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()
 
+def train_logistic_regression(preprocessed_train_answers_grades_df, preprocessed_answer_key_df):
+    # Convert student answers to a TF-IDF matrix
+    vectorizer = TfidfVectorizer()
+    student_answers_tfidf = vectorizer.fit_transform(preprocessed_train_answers_grades_df['answer'])
+
+    # Map student answers to their corresponding correct answer labels
+    answer_key_dict = preprocessed_answer_key_df.set_index('Q#')['Answers'].to_dict()
+    preprocessed_train_answers_grades_df['correct_answer'] = preprocessed_train_answers_grades_df['Q#'].map(answer_key_dict)
+
+    # Train the logistic regression model
+    model = LogisticRegression()
+    model.fit(student_answers_tfidf, preprocessed_train_answers_grades_df['correct_answer'])
+
+    # Evaluate the model on the training dataset
+    train_predictions = model.predict(student_answers_tfidf)
+    train_accuracy = accuracy_score(preprocessed_train_answers_grades_df['correct_answer'], train_predictions)
+
+    return model, train_accuracy
+
 class Powergrading:
     def __init__(self, answer_key_df, answer_groupings):
         self.answer_key_df = answer_key_df
@@ -417,17 +446,18 @@ def main():
     filtered_df = preprocessed_test_answers_grades_df[preprocessed_test_answers_grades_df['Q#'] == question_number]
     answer1, answer2 = filtered_df.sample(2)['answer'].values
 
+    print(f'')
     print(f"Question number: {question_number}")
     print(f"Answer 1: {answer1}")
     print(f"Answer 2: {answer2}")
-
+    print(f'')
     print("Difference in length:", difference_in_length(answer1, answer2))
     print("Fraction of words with matching base forms:", fraction_of_words_with_matching_base_forms(answer1, answer2))
     print("Max idf of matching base form:", max_idf_of_matching_base_form(answer1, answer2))
     print("tf-idf vector similarity:", tf_idf_vector_similarity(answer1, answer2))
     print("tf-idf vector similarity of letters:", tf_idf_vector_similarity_of_letters(answer1, answer2))
     print("Lowercase string match:", lowercase_string_match(answer1, answer2))
-
+    print(f'')
 
     # Get answer groupings
     answer_groupings = get_answer_groupings(preprocessed_answer_groupings_df)
@@ -465,19 +495,25 @@ def main():
     train_accuracy = powergrading_model.evaluate(preprocessed_train_answers_grades_df)
     test_accuracy = powergrading_model.evaluate(preprocessed_test_answers_grades_df)
 
-   # Assuming preprocessed_train_answers_grades_df contains the preprocessed studentanswers_grades_100 DataFrame
+    model, log_accuracy = train_logistic_regression(preprocessed_train_answers_grades_df, preprocessed_answer_key_df)
+
+    # Assuming preprocessed_train_answers_grades_df contains the preprocessed studentanswers_grades_100 DataFrame
     example_question_numbers = preprocessed_train_answers_grades_df.iloc[:19]['Q#'].tolist()
     example_student_answers = preprocessed_train_answers_grades_df.iloc[:19]['answer'].tolist()
 
     compare_student_answers(example_question_numbers, example_student_answers, preprocessed_answer_key_df, answer_groupings)
     plot_correctness_distribution(example_question_numbers, example_student_answers, preprocessed_answer_key_df)
-    print(f'Powergrading Model Accuracy: {train_accuracy:.2%}')
 
+    print(f'')
+    print(f'')
     display_grader_table()
+    print(f'')
+    print(f'Powergrading Model Accuracy: {train_accuracy:.2%}')
+    print(f'')
+    print(f'Logistic Regression Model Accuracy: {log_accuracy:.2%}')
 
     y_true, y_score = get_true_labels_and_scores(example_question_numbers, example_student_answers, preprocessed_answer_key_df)
     # plot_roc_curve(y_true, y_score)
-
 
 if __name__ == '__main__':
     main()
