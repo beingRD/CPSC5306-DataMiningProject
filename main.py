@@ -54,6 +54,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
 
 
 def difference_in_length(answer1, answer2):
@@ -393,6 +396,45 @@ def train_logistic_regression(preprocessed_train_answers_grades_df, preprocessed
 
     return model, train_accuracy
 
+def train_mdt(preprocessed_train_answers_grades_df, preprocessed_answer_key_df):
+    # Convert student answers to a TF-IDF matrix
+    vectorizer = TfidfVectorizer()
+    student_answers_tfidf = vectorizer.fit_transform(preprocessed_train_answers_grades_df['answer'])
+
+    # Map student answers to their corresponding correct answer labels
+    answer_key_dict = preprocessed_answer_key_df.set_index('Q#')['Answers'].to_dict()
+    preprocessed_train_answers_grades_df['correct_answer'] = preprocessed_train_answers_grades_df['Q#'].map(answer_key_dict)
+
+    # Train the Mixture of Decision Trees model
+    model = RandomForestClassifier(n_estimators=10)
+    model.fit(student_answers_tfidf, preprocessed_train_answers_grades_df['correct_answer'])
+
+    # Evaluate the model on the training dataset
+    train_predictions = model.predict(student_answers_tfidf)
+    train_accuracy = accuracy_score(preprocessed_train_answers_grades_df['correct_answer'], train_predictions)
+
+    return model, train_accuracy
+
+def train_lsa_and_classifier(preprocessed_train_answers_grades_df, preprocessed_answer_key_df, n_components=100):
+    # Have some bugs with THIS
+    lsa, student_answers_lsa = train_lsa(preprocessed_train_answers_grades_df, n_components)
+
+    # Get the correct labels for each student answer
+    y_true = get_true_labels(preprocessed_train_answers_grades_df, preprocessed_answer_key_df)
+
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(student_answers_lsa, y_true, test_size=0.2, random_state=42)
+
+    # Train the logistic regression classifier
+    lr_classifier = LogisticRegression(solver='lbfgs', max_iter=1000)
+    lr_classifier.fit(X_train, y_train)
+
+    # Calculate the training accuracy
+    train_accuracy = lr_classifier.score(X_train, y_train)
+
+    return lr_classifier, train_accuracy
+
+
 class Powergrading:
     def __init__(self, answer_key_df, answer_groupings):
         self.answer_key_df = answer_key_df
@@ -496,6 +538,7 @@ def main():
     test_accuracy = powergrading_model.evaluate(preprocessed_test_answers_grades_df)
 
     model, log_accuracy = train_logistic_regression(preprocessed_train_answers_grades_df, preprocessed_answer_key_df)
+    mdt_model, mdt_train_accuracy = train_mdt(preprocessed_train_answers_grades_df, preprocessed_answer_key_df)
 
     # Assuming preprocessed_train_answers_grades_df contains the preprocessed studentanswers_grades_100 DataFrame
     example_question_numbers = preprocessed_train_answers_grades_df.iloc[:19]['Q#'].tolist()
@@ -511,6 +554,10 @@ def main():
     print(f'Powergrading Model Accuracy: {train_accuracy:.2%}')
     print(f'')
     print(f'Logistic Regression Model Accuracy: {log_accuracy:.2%}')
+    print(f'')
+    print(f'Mixture of Decision Trees Model Train Accuracy: {mdt_train_accuracy:.2%}')
+    print(f'')
+
 
     y_true, y_score = get_true_labels_and_scores(example_question_numbers, example_student_answers, preprocessed_answer_key_df)
     # plot_roc_curve(y_true, y_score)
