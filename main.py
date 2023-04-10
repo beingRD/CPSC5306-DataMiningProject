@@ -94,6 +94,15 @@ def lowercase_string_match(answer1, answer2):
 def read_excel(file_path):
     return pd.read_excel(file_path, engine='openpyxl', header=0)
 
+def preprocess_data(df):
+    # Preprocessing steps such as lowercasing, removing special characters, etc. can be added here
+    for column in df.columns:
+        if df[column].dtype == 'object':  # Apply preprocessing only on string columns
+            df[column] = df[column].apply(lambda x: x.lower() if isinstance(x, str) else x)  # Lowercase
+            df[column] = df[column].apply(lambda x: re.sub(r'[^\w\s]', '', x) if isinstance(x, str) else x)  # Remove special characters
+            df[column] = df[column].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
+    return df
+
 def preprocess_answer_key(df):
     # Preprocessing steps specific to the answer key DataFrame
     df = preprocess_data(df)
@@ -120,15 +129,6 @@ def preprocess_answer_groupings(df):
     df['grouplabel'] = df['grouplabel'].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
 
     return preprocess_data(df)
-
-def preprocess_data(df):
-    # Preprocessing steps such as lowercasing, removing special characters, etc. can be added here
-    for column in df.columns:
-        if df[column].dtype == 'object':  # Apply preprocessing only on string columns
-            df[column] = df[column].apply(lambda x: x.lower() if isinstance(x, str) else x)  # Lowercase
-            df[column] = df[column].apply(lambda x: re.sub(r'[^\w\s]', '', x) if isinstance(x, str) else x)  # Remove special characters
-            df[column] = df[column].apply(lambda x: re.sub(r'\s+', ' ', x).strip() if isinstance(x, str) else x)  # Trim extra whitespace
-    return df
 
 def get_answer_groupings(df):
     answer_groupings = defaultdict(list)
@@ -214,8 +214,6 @@ def compare_student_answers(question_numbers, student_answers, answer_key_df, an
     # Pad the heatmap_data with np.nan values
     padded_heatmap_data = [np.pad(row, (0, max_correct_answers - len(row)), constant_values=np.nan) for row in heatmap_data]
 
-
-
     # Plot the heatmap
     # Adjust figure height to show full y-axis text and rotate y-axis labels
     plt.subplots_adjust(left=0.2, bottom=0.1, top=0.9)
@@ -226,8 +224,6 @@ def compare_student_answers(question_numbers, student_answers, answer_key_df, an
     plt.title('Cosine Similarity between Student Answers and Correct Answers')
     plt.yticks(rotation=0)
     plt.show()
-
-
 
 def student_answers_to_tfidf(student_answers_df):
     student_answers = student_answers_df['answer'].tolist()
@@ -325,7 +321,6 @@ def display_grader_table():
 
     for row in table_data:
         print(f"{row[0]:<5}{row[1]:<12}{row[2]:<12}{row[3]:<12}{row[4]:.3f}")
-
 
 def plot_roc_curve(y_true, y_score):
     fpr, tpr, _ = roc_curve(y_true, y_score)
@@ -433,7 +428,6 @@ def train_lsa_and_classifier(preprocessed_train_answers_grades_df, preprocessed_
     train_accuracy = lr_classifier.score(X_train, y_train)
 
     return lr_classifier, train_accuracy
-
 
 class Powergrading:
     def __init__(self, answer_key_df, answer_groupings):
@@ -557,7 +551,6 @@ def main():
     print(f'')
     print(f'Mixture of Decision Trees Model Train Accuracy: {mdt_train_accuracy:.2%}')
     print(f'')
-
 
     y_true, y_score = get_true_labels_and_scores(example_question_numbers, example_student_answers, preprocessed_answer_key_df)
     # plot_roc_curve(y_true, y_score)
