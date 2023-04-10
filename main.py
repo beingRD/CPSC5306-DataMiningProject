@@ -1,8 +1,36 @@
+# --------------------------------------------------------------------------------
+# Copyright (c) 2023, Rishabh Dev
+# All rights reserved.
+#
+# This main.py file is part of a Data Mining project for the university course
+# at Laurentian University.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# --------------------------------------------------------------------------------
+
 import os
 import pandas as pd
 from collections import defaultdict
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
 from sklearn.decomposition import LatentDirichletAllocation as LDA
 from sklearn.decomposition import PCA
@@ -10,7 +38,52 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
+import re
+import random
+from collections import Counter
+from nltk.stem import WordNetLemmatizer
+import nltk
+nltk.download('wordnet')
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
+
+def difference_in_length(answer1, answer2):
+    return abs(len(answer1) - len(answer2))
+
+
+def fraction_of_words_with_matching_base_forms(answer1, answer2):
+    lemmatizer = WordNetLemmatizer()
+    words1 = [lemmatizer.lemmatize(w) for w in re.findall(r'\w+', answer1.lower())]
+    words2 = [lemmatizer.lemmatize(w) for w in re.findall(r'\w+', answer2.lower())]
+
+    matching_words = sum((Counter(words1) & Counter(words2)).values())
+    average_length = (len(words1) + len(words2)) / 2
+    return matching_words / average_length
+
+
+def max_idf_of_matching_base_form(answer1, answer2):
+    tfidf = TfidfVectorizer()
+    matrix = tfidf.fit_transform([answer1, answer2])
+    feature_names = tfidf.get_feature_names_out()
+    max_idf = max(tfidf.idf_)
+    return max_idf
+
+
+def tf_idf_vector_similarity(answer1, answer2):
+    tfidf = TfidfVectorizer()
+    matrix = tfidf.fit_transform([answer1, answer2])
+    return cosine_similarity(matrix[0:1], matrix[1:])[0][0]
+
+
+def tf_idf_vector_similarity_of_letters(answer1, answer2):
+    tfidf = TfidfVectorizer(analyzer='char', token_pattern=r'\w{1,}')
+    matrix = tfidf.fit_transform([answer1, answer2])
+    return cosine_similarity(matrix[0:1], matrix[1:])[0][0]
+
+
+def lowercase_string_match(answer1, answer2):
+    return answer1.lower() == answer2.lower()
 
 def read_excel(file_path):
     return pd.read_excel(file_path, engine='openpyxl', header=0)
@@ -325,6 +398,22 @@ def main():
     preprocessed_train_answers_grades_df = preprocess_student_answers_grades(train_answers_grades_df)
     preprocessed_test_answers_grades_df = preprocess_student_answers_grades(test_answers_grades_df)
     preprocessed_answer_groupings_df = preprocess_answer_groupings(answer_groupings_df)
+
+    question_number = random.choice(list(preprocessed_test_answers_grades_df['Q#'].unique()))
+    filtered_df = preprocessed_test_answers_grades_df[preprocessed_test_answers_grades_df['Q#'] == question_number]
+    answer1, answer2 = filtered_df.sample(2)['answer'].values
+
+    print(f"Question number: {question_number}")
+    print(f"Answer 1: {answer1}")
+    print(f"Answer 2: {answer2}")
+
+    print("Difference in length:", difference_in_length(answer1, answer2))
+    print("Fraction of words with matching base forms:", fraction_of_words_with_matching_base_forms(answer1, answer2))
+    print("Max idf of matching base form:", max_idf_of_matching_base_form(answer1, answer2))
+    print("tf-idf vector similarity:", tf_idf_vector_similarity(answer1, answer2))
+    print("tf-idf vector similarity of letters:", tf_idf_vector_similarity_of_letters(answer1, answer2))
+    print("Lowercase string match:", lowercase_string_match(answer1, answer2))
+
 
     # Get answer groupings
     answer_groupings = get_answer_groupings(preprocessed_answer_groupings_df)
