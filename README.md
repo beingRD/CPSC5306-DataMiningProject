@@ -168,12 +168,12 @@ Further research could explore more sophisticated rubrics and clustering algorit
 The Powergrading approach has potential applications in various domains such as education, healthcare, and legal industries, as it shows promise in improving the efficiency and consistency of short answer grading tasks.
 
 
-Clusters our model gave us for answer grouping 
+Clusters our model gave us for answer grouping: 
 https://ibb.co/jJk2HkY
 
-Result we got for LDA Clustering
+Result we got for LDA Clustering:
 https://ibb.co/2ZRsQfK
 
-Result for Cosine-Similarity 
+Result for Cosine-Similarity: 
 https://ibb.co/k0D6m9z
   
