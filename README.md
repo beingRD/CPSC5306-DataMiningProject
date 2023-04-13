@@ -10,7 +10,7 @@
 
 _______________________________________________________________________________________________________________________________________________________________________
 
-Coded based on the article " 1-	Basu, S., Jacobs, C., & Vanderwende, L. (2013). Powergrading: a clustering approach to amplify human effort for short answer grading. Transactions of the Association for Computational Linguistics, 1, 391-402."
+Coded based on the article " Basu, S., Jacobs, C., & Vanderwende, L. (2013). Powergrading: a clustering approach to amplify human effort for short answer grading. Transactions of the Association for Computational Linguistics, 1, 391-402."
 
 Link : https://www.microsoft.com/en-us/research/wp-content/uploads/2013/10/powergrading_TACL_Basu_Jacobs_Vanderwende.pdf
 
