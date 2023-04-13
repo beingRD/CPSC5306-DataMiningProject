@@ -56,9 +56,13 @@ ________________________________________________________________________________
 **Preprocessing**
 
 In the "Powergrading" approach, several preprocessing steps are taken to prepare the short answer data for clustering. 
+
 Before applying the "Powergrading" approach to the dataset, we need to preprocess the data to clean and prepare it for clustering. This involves removing stop words, stemming or lemmatizing the text, and converting the data into a format that can be used by the clustering algorithm.
+
 **Tokenization:** The short answer responses are tokenized, which involves breaking them down into individual words or phrases. This step is necessary to enable the application of natural language processing techniques such as stemming, lemmatization, and stop-word removal.
+
 **Stop-word removal:** Stop words are common words that do not carry much meaning, such as "the" and "and". These words are removed from the short answer responses to reduce noise in the data and improve the efficiency and effectiveness of the clustering process.
+
 **Stemming and lemmatization:** Stemming involves reducing words to their base form (e.g., "running" becomes "run"), while lemmatization involves reducing words to their dictionary form (e.g., "running" becomes "run"). These techniques help to reduce the dimensionality of the data and improve the accuracy of the clustering process.
 
 
