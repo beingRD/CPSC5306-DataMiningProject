@@ -14,9 +14,11 @@ Coded based on the article " 1-	Basu, S., Jacobs, C., & Vanderwende, L. (2013). 
 Link : https://www.microsoft.com/en-us/research/wp-content/uploads/2013/10/powergrading_TACL_Basu_Jacobs_Vanderwende.pdf
 
 
+
 **ABSTRACT**
 
 Our Python project aims to implement the Powergrading approach proposed in the research paper to address the challenge of grading short answers. Powergrading utilizes clustering techniques to group similar answers together and assigns grades to each cluster, reducing the human effort required for grading while maintaining high agreement with human grades. We developed a Python code that leverages related articles and datasets provided by the research paper to implement the Powergrading approach. The code will be designed to cluster short answers, assign grades to each cluster, and evaluate the results against human grades. Through this implementation, we aim to validate the effectiveness of Powergrading in reducing the human effort needed for short answer grading across various domains. We will thoroughly evaluate the performance of our implementation and compare it with other clustering-based techniques to demonstrate the promising results of the proposed approach. The implementation of the Powergrading approach in our Python project will provide a practical solution for automating and streamlining the process of short answer grading, with potential applications in educational settings, assessment systems, and other domains.
+
 
 
 **Problem Statement**
@@ -24,11 +26,13 @@ Our Python project aims to implement the Powergrading approach proposed in the r
 The main focus of the paper by Basu et al. (2013) is on the challenges of grading short answer questions in large-scale educational settings, specifically the time-consuming and subjective nature of the process. Traditional grading methods involve human graders manually evaluating each student's response, which can be both time-consuming and inconsistent due to the subjective nature of grading. To address this, the authors propose a clustering approach called Powergrading, which leverages machine learning techniques to group similar responses together, making the evaluation process more efficient and consistent for human graders. The ultimate goal of this approach is to enhance human effort and improve the accuracy and consistency of short answer grading.
 
 
+
 **Challenges in short answer grading:**
 
 1.	Time-consuming: Grading short answers manually is labor-intensive, and it can be overwhelming for teachers and instructors, especially when dealing with a large number of students.
 2.	Consistency: Ensuring consistency in grading across different graders or even the same grader at different times can be challenging. Personal biases, subjectivity, and fatigue can impact the grading process.
 3.	Scalability: The increasing number of students participating in online learning platforms and MOOCs has led to a rise in the need for grading solutions that can handle large-scale assessment efficiently.
+
 
 
 **Data Set**
@@ -43,6 +47,7 @@ studentanswers_grades_100.tsv: Includes 100 questions for training of the model.
 studentanswers_grades_698.tsv: Includes testing dataset of student answers.
 
 
+
 **Preprocessing**
 
 In the "Powergrading" approach, several preprocessing steps are taken to prepare the short answer data for clustering. 
@@ -50,6 +55,7 @@ Before applying the "Powergrading" approach to the dataset, we need to preproces
 **Tokenization:** The short answer responses are tokenized, which involves breaking them down into individual words or phrases. This step is necessary to enable the application of natural language processing techniques such as stemming, lemmatization, and stop-word removal.
 **Stop-word removal:** Stop words are common words that do not carry much meaning, such as "the" and "and". These words are removed from the short answer responses to reduce noise in the data and improve the efficiency and effectiveness of the clustering process.
 **Stemming and lemmatization:** Stemming involves reducing words to their base form (e.g., "running" becomes "run"), while lemmatization involves reducing words to their dictionary form (e.g., "running" becomes "run"). These techniques help to reduce the dimensionality of the data and improve the accuracy of the clustering process.
+
 
 
 **Functions**
@@ -126,6 +132,7 @@ The resulting matrix, called lda_matrix, represents the documents in a lower-dim
 plot_lda_clusters(lda_matrix, cluster_labels, answer_groupings, title): The function takes in four inputs: the result of LDA clustering (lda_matrix), cluster labels (cluster_labels), answer groupings (answer_groupings), and a title for the plot. It uses the PCA class from sklearn.decomposition to reduce the lda_matrix to 2 dimensions for visualization. It creates a scatter plot of the reduced data with points colored based on the cluster label, and adds a legend to show the mapping between cluster labels and colors. Finally, the plot is displayed using plt.show()
 
 
+
 **Data Analysis**
 
 The data analysis section conducts a thorough analysis of the provided dataset, using techniques such as data pre-processing, clustering, machine learning, and visualization. The analysis includes the following:
@@ -141,6 +148,7 @@ The data analysis section conducts a thorough analysis of the provided dataset, 
 5- **Evaluation Metrics Analysis:** Various evaluation metrics, such as classification report and ROC AUC score, are used to assess the performance of the Powergrading model.
 
 6- **Visualization Analysis:** Visualizations, such as LDA clusters and PCA plots, are used to gain insights into the patterns and relationships in the data.
+
 
 
 **Results**
