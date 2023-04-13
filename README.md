@@ -7,7 +7,8 @@
 - Mattew Faubert
 - Akash Jassal
 - Iman Kiani Nezhad
-==============================
+
+_______________________________________________________________________________________________________________________________________________________________________
 
 Coded based on the article " 1-	Basu, S., Jacobs, C., & Vanderwende, L. (2013). Powergrading: a clustering approach to amplify human effort for short answer grading. Transactions of the Association for Computational Linguistics, 1, 391-402."
 
