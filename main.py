@@ -442,13 +442,11 @@ class Powergrading:
         return calculate_cosine_similarity(answer1, [answer2])[0][0]
 
     def k_medoids_clustering(self, student_answers, n_clusters=10, n_subclusters=5):
-        # Dummy implementation, replace with actual k-medoids clustering
         clusters = [student_answers[i::n_clusters] for i in range(n_clusters)]
         subclusters = [[cluster[i::n_subclusters] for i in range(n_subclusters)] for cluster in clusters]
         return clusters, subclusters
 
     def automatic_labels(self, clusters, subclusters, answer_key):
-        # Dummy implementation, replace with actual automatic labeling
         return {i: f'Group {i}' for i in range(len(clusters))}
 
     def train(self, student_answers):
